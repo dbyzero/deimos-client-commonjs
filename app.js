@@ -4,10 +4,10 @@ var Engine = require('./src/Engine.js')
 var config = {
 	domId : 'gamezone',
 	serverURL : 'http://localhost',
-	serverPort : '40000',
-	serverAssetURL : 'http://localhost:1082',
-	avatarId : 10,
-	sessionId : '123123123123123'
+	serverPort : '1337',
+	serverAssetURL : 'http://localhost:1081',
+	avatarId : 1,
+	sessionId : '70c928925c9384f0fab58f11cea6815e'
 };
 
 Engine.start(config);
