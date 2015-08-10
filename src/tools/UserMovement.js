@@ -1,13 +1,12 @@
-var UserMovement = function (id, type, start, force) {
-	this.id = id;
+var lastId = 0;
+
+var UserMovement = function (force, type) {
+	this.id = lastId++;
 	this.movement = force;
-	this.startTimestamp = start;
+	this.startTimestamp = new Date().getTime();
 	this.durationIntegrated = 0;
 	this.duration = null;
 	this.type = type;
 }
-
-// UserMovement.lastid = 0;
-
 
 module.exports = UserMovement ;

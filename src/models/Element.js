@@ -1,6 +1,8 @@
 var ServerConfig = require('../Config');
 var Vector = require('../tools/Vector')
 var Physics = require('../tools/Physics')
+var EventEmitter = require('events').EventEmitter;
+var inherit = require('../tools/inherit');
 
 var Element = function( id, name, position, size, orientation, mass, moveSpeed, jumpSpeed, maxHP, HP, deltashow ) {
 	//attributs
@@ -87,6 +89,8 @@ var Element = function( id, name, position, size, orientation, mass, moveSpeed, 
 	}
 
 };
+
+inherit(Element,EventEmitter);
 
 Element.prototype.initHP = function() {
 	//REFAIRE EN INTEGRANT DANS LE DIV ELEMENT LES HP

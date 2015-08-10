@@ -129,6 +129,11 @@ var onJoinGame = function(messageRaw) {
 	);
 
 	currentAvatar.init(Scene);
+
+	currentAvatar.on('sendMessage',function(action, data){
+		Engine.sendMessage(action, data);
+	})
+
 	Scene.addAvatar(currentAvatar);
 
 	//3. store avatar items ??
@@ -160,11 +165,17 @@ var unbindAllKeys = function(avatar) {
 }
 
 var onLeftPushed = function() {
-	console.log('goLeft');
+	var force = new UserMovement(
+		new Vector(-currentAvatar.move_speed,0),
+		Message['LEFT']
+	);
+	currentAvatar.addUserInputs(force);
+	Engine.sendMessage(Message['ACTION_MOVE_START'],force);
+	currentAvatar.oriented = 'left';
 }
 
 var onLeftReleased = function() {
-	console.log('goLeftStop');
+	currentAvatar.removeUserInputs(Message['LEFT']);
 }
 
 var onUpPushed = function() {
@@ -176,9 +187,8 @@ var onUpReleased = function() {
 }
 
 var onRightPushed = function() {
-	console.log('goRight');
 	var force = new UserMovement(
-		new Vector(this.move_speed,0),
+		new Vector(currentAvatar.move_speed,0),
 		Message['RIGHT']
 	);
 	currentAvatar.addUserInputs(force);
@@ -187,7 +197,7 @@ var onRightPushed = function() {
 }
 
 var onRightReleased = function() {
-	console.log('goRightStop');
+	currentAvatar.removeUserInputs(Message['RIGHT']);
 }
 
 var onDownPushed = function() {

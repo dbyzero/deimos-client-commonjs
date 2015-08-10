@@ -1,7 +1,9 @@
 var Element = require('./Element');
 var ServerConfig = require('../Config');
-// var Engine = require('../Engine');
 var inherit = require('../tools/inherit');
+
+var Engine = require('../Engine');
+var Message = require('../Message')[ServerConfig.messageLevel];
 
 var Avatar = function( id, name, position, size, orientation, mass, moveSpeed, jumpSpeed, maxHP, HP, deltashow ) {
 
@@ -102,7 +104,7 @@ Avatar.prototype.update = function(dt, now) {
 			this.toMove.x += parseFloat((input.movement.x * missingIntegration/1000));
 			this.toMove.y += parseFloat((input.movement.y * missingIntegration/1000));
 
-			Engine.sendMessage(Message['ACTION_MOVE_STOP'],input);
+			this.emit('sendMessage',Message['ACTION_MOVE_STOP'],input);
 			delete this.userInputs[id];
 		}
 	}
