@@ -61,13 +61,13 @@ var keyDown = function(e) {
 	var evtobj = window.event? event : e;
 	var key = evtobj.keyCode;
 	if(key in listenedKeys){
+		e.preventDefault();
 		if(keyIsDown[key] === true) return;
 		keyIsDown[key] = true;
 		for(var keyCb in keyDownCallbacks[key]) {
 			keyDownCallbacks[key][keyCb]();
 		}
 	}
-	e.preventDefault();
 }
 
 var keyReleased = function(e) {
@@ -75,6 +75,7 @@ var keyReleased = function(e) {
 	var key = evtobj.keyCode;
 	if(key in listenedKeys){
 		if(keyIsDown[key] === false) return;
+		e.preventDefault();
 		keyIsDown[key] = false;
 		for(var keyCb in keyUpCallbacks[key]) {
 			keyUpCallbacks[key][keyCb]();

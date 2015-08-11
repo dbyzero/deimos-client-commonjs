@@ -25,10 +25,7 @@ var Element = function( id, name, position, size, orientation, mass, moveSpeed, 
 	this.speaker = null;
 
 	//trackers
-	this.speaking = false;
 	this.lastAttack = null;
-	this.saying = "";
-	this.lastSayed = 0;
 	this.skipNextUpdateAndMove = false;
 	this.isLanded = false;
 	this.toMove = new Vector(0,0);

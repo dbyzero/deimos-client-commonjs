@@ -66,12 +66,13 @@ Scene.update = function(dt) {
 		};
 	}
 
-	//move and render entities !
+	//move and render avatars !
 	keys = Object.keys(Scene.avatars);
 	for(i=0;i<keys.length;i++) {
 		var avatar = Scene.avatars[keys[i]];
 		avatar.move();
 		avatar.updateAnimation();
+		avatar.addingWaitingForces();
 	}
 	//move and render Scene.projectiles !
 	keys = Object.keys(Scene.projectiles);

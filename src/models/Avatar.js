@@ -1,4 +1,5 @@
 var Element = require('./Element');
+var Speaker = require('./Speaker');
 var ServerConfig = require('../Config');
 var inherit = require('../tools/inherit');
 
@@ -10,6 +11,12 @@ var Avatar = function( id, name, position, size, orientation, mass, moveSpeed, j
 	this.domId = 'avatar_' + id + '_' + new Date().getTime() + '_' + Math.floor((Math.random()*1000000)+1); ;
 	Avatar._super.call(this, id, name, position, size, orientation, mass, moveSpeed, jumpSpeed, maxHP, HP, deltashow );
 
+	//speaking
+	this.speaking = false;
+	this.lastSayed = 0;
+	this.saying = "";
+	this.speaker;
+	this.closingSpeakerProcess;
 
 	this.waitingForce = [];
 	this.userInputs = {};
@@ -18,7 +25,6 @@ var Avatar = function( id, name, position, size, orientation, mass, moveSpeed, j
 	this.item_slot_chest = null;
 	this.item_slot_left_hand = null;
 	this.item_slot_right_hand = null;
-
 
 	this.collisionTypeEnabled['plateforme'] = true;
 	this.collisionTypeEnabled['bonus'] = true;
@@ -29,7 +35,7 @@ var Avatar = function( id, name, position, size, orientation, mass, moveSpeed, j
 
 inherit(Avatar,Element);
 
-Avatar.prototype.init = function() {
+Avatar.prototype.init = function(controlled) {
 	// Avatar._super.prototype.init.call(this);
 
 	this.initAnimation();
@@ -38,7 +44,7 @@ Avatar.prototype.init = function() {
 	this.domElem.style.backgroundImage = "url("+ServerConfig.custom.serverAssetURL+"/spritesheet/char/"+this.id+"/spritesheet.png)";
 
 	//add speaker
-	// this.initSpeaker(var readOnly = false);
+	this.initSpeaker(!controlled);
 }
 
 Avatar.prototype.initAnimation = function() {
@@ -51,6 +57,11 @@ Avatar.prototype.initAnimation = function() {
 	this.dictClass['shooting_right'] = 'avatarAnimationShootingRight';
 	this.dictClass['shooting_left']	 = 'avatarAnimationShootingLeft';
 	this.dictClass['front']			 = 'avatarAnimationFront';
+}
+
+Avatar.prototype.initSpeaker = function(readonly) {
+	this.speaker = new Speaker(this.domId, readonly) ;
+	this.speaker.init(this);
 }
 
 Avatar.prototype.addUserInputs = function(mvt) {
@@ -66,9 +77,41 @@ Avatar.prototype.removeUserInputs = function(type) {
 	}
 }
 
+//adding force next step
+Avatar.prototype.addForceNextStep = function(force) {
+	this.waitingForce.push(force) ;
+}
+
+Avatar.prototype.addingWaitingForces = function() {
+	var forces = this.waitingForce;
+	for(force in forces) {
+		this.velocity.add(forces[force]);
+		this.waitingForce.splice(0,1);
+	}
+}
+
+Avatar.prototype.toggleSpeaking = function () {
+	this.speaking = !this.speaking;
+	if(this.speaking) {
+		clearTimeout(this.closingSpeakerProcess);
+		this.speaker.show();
+	} else {
+		this.speaker.leaveFocus();
+		if(this.saying.length > 0) {
+			this.closingSpeakerProcess = setTimeout(
+				function(){
+					this.speaker.hide();
+				}.bind(this),
+				ServerConfig.speakerCloseDelay
+			);
+		} else {
+			this.speaker.hide();
+		}
+	}
+}
+
 Avatar.prototype.update = function(dt, now) {
 
-	//toggle speaker if needed
 	// if(this.speaking) {
 	// 	var new_saying = this.getSaying();
 	// 	if(this.saying !== new_saying) {
@@ -104,7 +147,7 @@ Avatar.prototype.update = function(dt, now) {
 			this.toMove.x += parseFloat((input.movement.x * missingIntegration/1000));
 			this.toMove.y += parseFloat((input.movement.y * missingIntegration/1000));
 
-			this.emit('sendMessage',Message['ACTION_MOVE_STOP'],input);
+			this.emit('movementStop',input);
 			delete this.userInputs[id];
 		}
 	}

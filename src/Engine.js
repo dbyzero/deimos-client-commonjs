@@ -41,6 +41,9 @@ Engine.start = function(config) {
 		.on(Message['ACTION_CHOOSE_CHAR_OK'],function(message){
 			onJoinGame(message);
 		})
+		.on(Message['ACTION_SYNC'],function(message){
+			console.debug('SYNC FROM SERVER');
+		})
 }
 
 Engine.stop = function() {
@@ -56,6 +59,10 @@ Engine.sendMessage = function(action,data) {
 	data = data || {};
 	data[Message['SESSION_ID']] = ServerConfig.custom['sessionId'];
 	data[Message['DATE']] = new Date().getTime();
+	data[Message['MESSAGE_POSITION']] = {
+		x: currentAvatar ? currentAvatar.position.x : 0,
+		y: currentAvatar ? currentAvatar.position.y : 0
+	};
 	console.debug('Send Message : '+action)
 	console.debug(data);
 	Socket.emit(action,data);
@@ -128,10 +135,16 @@ var onJoinGame = function(messageRaw) {
 		message[Message.MESSAGE_CHAR][Message.MESSAGE_DELTASHOW]
 	);
 
-	currentAvatar.init(Scene);
+	currentAvatar.init(true);
 
-	currentAvatar.on('sendMessage',function(action, data){
-		Engine.sendMessage(action, data);
+	currentAvatar.on('movementStop',function(mouvement){
+		Engine.sendMessage(Message['ACTION_MOVE_STOP'], mouvement);
+
+	})
+
+	currentAvatar.speaker.on('textChange',function(message){
+		currentAvatar.saying = message;
+		currentAvatar.lastSayed = new Date().getTime();
 	})
 
 	Scene.addAvatar(currentAvatar);
@@ -179,11 +192,19 @@ var onLeftReleased = function() {
 }
 
 var onUpPushed = function() {
-	console.log('jump');
+	if(!currentAvatar.isLanded == false && currentAvatar.speaking == false) {
+		var force = new UserMovement(
+			new Vector(0,parseInt('-'+currentAvatar.jump_speed)),
+			Message['JUMP']
+		);
+		currentAvatar.addForceNextStep(force.movement) ;
+		Engine.sendMessage(Message['ACTION_JUMP'],force);
+
+	}
 }
 
 var onUpReleased = function() {
-	console.log('jumpStop');
+	//stub
 }
 
 var onRightPushed = function() {
@@ -223,8 +244,9 @@ var onDownReleased = function() {
 }
 
 var onEnterPushed = function() {
-	console.log('speak');
+	currentAvatar.toggleSpeaking();
 }
+
 var onSpacePushed = function() {
 	console.log('shoot');
 }

@@ -10,6 +10,7 @@ Config.GAME_SPEED = 33;
 Config.SQUARE_AUTHORITY = 100*100;
 Config.DELTA_SERVER_SYNC = 5000;
 Config.showOwnMirror = false;
+Config.speakerCloseDelay = 5000;
 
 Config.Gravity = new Vector(0, 300);
 
