@@ -112,21 +112,6 @@ Avatar.prototype.toggleSpeaking = function () {
 
 Avatar.prototype.update = function(dt, now) {
 
-	// if(this.speaking) {
-	// 	var new_saying = this.getSaying();
-	// 	if(this.saying !== new_saying) {
-	// 		this.saying = new_saying;
-	// 		EventManager.fire('org.dbyzero.deimos.network.sendSync');
-	// 	}
-	// } else {
-	// 	if(this.lastSayed + 5000 < now && this.saying !== '') {
-	// 		this.speaker.hide();
-	// 		this.speaker.setText('');
-	// 		this.saying = '';
-	// 		EventManager.fire('org.dbyzero.deimos.network.sendSync');
-	// 	} 
-	// }
-
 	//call parent update
 	Avatar._super.prototype.update.call(this,dt,now);
 

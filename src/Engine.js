@@ -42,7 +42,7 @@ Engine.start = function(config) {
 			onJoinGame(message);
 		})
 		.on(Message['ACTION_SYNC'],function(message){
-			console.debug('SYNC FROM SERVER');
+			console.debug('TODO SYNC FROM SERVER');
 		})
 }
 
@@ -55,7 +55,15 @@ Engine.stop = function() {
 	inGame = false;
 }
 
-Engine.sendMessage = function(action,data) {
+Engine.isInGame = function() {
+	return inGame;
+}
+
+
+//================
+//PRIVATES METHODS
+//================
+var sendMessage = function(action,data) {
 	data = data || {};
 	data[Message['SESSION_ID']] = ServerConfig.custom['sessionId'];
 	data[Message['DATE']] = new Date().getTime();
@@ -68,14 +76,11 @@ Engine.sendMessage = function(action,data) {
 	Socket.emit(action,data);
 }
 
-Engine.isInGame = function() {
-	return inGame;
+var sendSync = function() {
+	var data = {};
+	data[Message['MESSAGE_SAYING']] = currentAvatar.saying;
+	sendMessage(Message['ACTION_SYNC'],data);
 }
-
-
-//================
-//PRIVATES METHODS
-//================
 
 var showError = function(message) {
 	alert(message);
@@ -88,7 +93,7 @@ var onLogged = function(messageRaw) {
 		if(avatars[i].id === ServerConfig.custom.avatarId) {
 			var response = {};
 			response[Message.MESSAGE_CHAR] = ServerConfig.custom.avatarId;
-			Engine.sendMessage(Message['ACTION_CHOOSE_CHAR'],response);
+			sendMessage(Message['ACTION_CHOOSE_CHAR'],response);
 			return;
 		}
 	}
@@ -138,14 +143,15 @@ var onJoinGame = function(messageRaw) {
 	currentAvatar.init(true);
 
 	currentAvatar.on('movementStop',function(mouvement){
-		Engine.sendMessage(Message['ACTION_MOVE_STOP'], mouvement);
+		sendMessage(Message['ACTION_MOVE_STOP'], mouvement);
 
 	})
 
 	currentAvatar.speaker.on('textChange',function(message){
 		currentAvatar.saying = message;
 		currentAvatar.lastSayed = new Date().getTime();
-	})
+		sendSync();
+	}.bind(this));
 
 	Scene.addAvatar(currentAvatar);
 
@@ -183,7 +189,7 @@ var onLeftPushed = function() {
 		Message['LEFT']
 	);
 	currentAvatar.addUserInputs(force);
-	Engine.sendMessage(Message['ACTION_MOVE_START'],force);
+	sendMessage(Message['ACTION_MOVE_START'],force);
 	currentAvatar.oriented = 'left';
 }
 
@@ -198,7 +204,7 @@ var onUpPushed = function() {
 			Message['JUMP']
 		);
 		currentAvatar.addForceNextStep(force.movement) ;
-		Engine.sendMessage(Message['ACTION_JUMP'],force);
+		sendMessage(Message['ACTION_JUMP'],force);
 
 	}
 }
@@ -213,7 +219,7 @@ var onRightPushed = function() {
 		Message['RIGHT']
 	);
 	currentAvatar.addUserInputs(force);
-	Engine.sendMessage(Message['ACTION_MOVE_START'],force);
+	sendMessage(Message['ACTION_MOVE_START'],force);
 	currentAvatar.oriented = 'right';
 }
 
@@ -229,7 +235,7 @@ var onDownPushed = function() {
 		'x' : currentAvatar.position.x,
 		'y' : currentAvatar.position.y
 	}
-	Engine.sendMessage(Message['ACTION_GOING_DOWN'], data);
+	sendMessage(Message['ACTION_GOING_DOWN'], data);
 }
 
 var onDownReleased = function() {
@@ -240,7 +246,7 @@ var onDownReleased = function() {
 		'x' : currentAvatar.position.x,
 		'y' : currentAvatar.position.y
 	}
-	Engine.sendMessage(Message['ACTION_GOING_DOWN_STOP'], data);
+	sendMessage(Message['ACTION_GOING_DOWN_STOP'], data);
 }
 
 var onEnterPushed = function() {
@@ -262,7 +268,7 @@ var onConnectionReady = function(){
 	console.log('Connection successfull');
 	gameLoop = new Loop(parseInt(1000/ServerConfig.FPS)) ;
 
-	Engine.sendMessage(Message['AUTH_BY_TOKEN'],{});
+	sendMessage(Message['AUTH_BY_TOKEN'],{});
 }
 
 var onConnectionError = function(err){
