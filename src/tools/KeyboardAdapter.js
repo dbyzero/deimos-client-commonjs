@@ -1,30 +1,30 @@
 var KeyboardAdapter = {};
-// KeyboardAdapter.keys = {};
-// KeyboardAdapter.keys.ENTER = 13;
-// KeyboardAdapter.keys.SPACE = 32;
-// KeyboardAdapter.keys.ARROW_LEFT = 37;
-// KeyboardAdapter.keys.ARROW_RIGHT = 39;
-// KeyboardAdapter.keys.ARROW_DOWN = 40;
-// KeyboardAdapter.keys.ARROW_UP = 38;
-// KeyboardAdapter.keys.n1 = 49;
-// KeyboardAdapter.keys.n2 = 50;
-// KeyboardAdapter.keys.n3 = 51;
-// KeyboardAdapter.keys.n4 = 52;
-// KeyboardAdapter.keys.n5 = 53;
-// KeyboardAdapter.keys.X = 88;
+
+/**
+
+REMINDER :
+
+n1 = 49
+n2 = 50
+n3 = 51
+n4 = 52
+n5 = 53
+X = 88
+ENTER = 13
+SPACE = 32
+ARROW_LEFT = 37
+ARROW_RIGHT = 39
+ARROW_DOWN = 40
+ARROW_UP = 38
+
+*/
 
 var keyDownCallbacks = {};
 var keyUpCallbacks = {};
 var listenedKeys = {};
 var keyIsDown = {};
 
-// var addManagedKey = function(key) {
-// 	listenedKeys[key] = true;
-// }
-
-// var removeManagedKey = function(key) {
-// 	delete listenedKeys[key];
-// }
+var isSleeping = false;
 
 KeyboardAdapter.addPushCallback = function(key, eventName, callback) {
 	//add key to listened keys
@@ -57,8 +57,20 @@ KeyboardAdapter.removeCallback = function(key, eventName) {
 	}
 }
 
+KeyboardAdapter.sleepListeners = function() {
+	isSleeping = true;
+}
+
+KeyboardAdapter.wakeupListeners = function() {
+	isSleeping = false;
+}
+
 var keyDown = function(e) {
 	var evtobj = window.event? event : e;
+
+	//We keep listener ENTER (touch toggeling speaker mode)
+	if(evtobj.keyCode !== 13 && isSleeping === true) return;
+
 	var key = evtobj.keyCode;
 	if(key in listenedKeys){
 		e.preventDefault();
@@ -72,10 +84,14 @@ var keyDown = function(e) {
 
 var keyReleased = function(e) {
 	var evtobj = window.event? event : e;
+
+	//We keep listener ENTER (touch toggeling speaker mode)
+	if(evtobj.keyCode !== 13 && isSleeping === true) return;
+
 	var key = evtobj.keyCode;
 	if(key in listenedKeys){
-		if(keyIsDown[key] === false) return;
 		e.preventDefault();
+		if(keyIsDown[key] === false) return;
 		keyIsDown[key] = false;
 		for(var keyCb in keyUpCallbacks[key]) {
 			keyUpCallbacks[key][keyCb]();

@@ -251,6 +251,12 @@ var onDownReleased = function() {
 
 var onEnterPushed = function() {
 	currentAvatar.toggleSpeaking();
+	if(currentAvatar.speaking === true) {
+		console.log('sleep');
+		KeyboardAdapter.sleepListeners();
+	} else {
+		KeyboardAdapter.wakeupListeners();
+	}
 }
 
 var onSpacePushed = function() {
