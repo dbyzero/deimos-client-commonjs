@@ -4,7 +4,7 @@ var Physics = require('../tools/Physics')
 var EventEmitter = require('events').EventEmitter;
 var inherit = require('../tools/inherit');
 
-var Element = function( id, name, position, size, orientation, mass, moveSpeed, jumpSpeed, maxHP, HP, deltashow ) {
+var Element = function( id, name, position, size, orientation, mass, moveSpeed, jumpSpeed, maxHP, HP, deltashow, skin ) {
 	//attributs
 	this.id = id;
 	this.name = name;
@@ -23,6 +23,7 @@ var Element = function( id, name, position, size, orientation, mass, moveSpeed, 
 	this.attackRate = null;
 	this.oriented = 'right';
 	this.speaker = null;
+	this.skin = skin;
 
 	//trackers
 	this.lastAttack = null;
@@ -76,6 +77,13 @@ var Element = function( id, name, position, size, orientation, mass, moveSpeed, 
 	this.domElemWidth = this.domElem.offsetWidth;//usefull for positionning name and speaker
 	this.domElemHeight = this.domElem.offsetHeight;//usefull for positionning name and speaker
 
+	this.init();
+};
+
+inherit(Element,EventEmitter);
+
+Element.prototype.init = function() {
+	this.initAnimation();
 
 	if(!!this.HP && !!this.maxHP) {
 		this.initHP();
@@ -84,10 +92,11 @@ var Element = function( id, name, position, size, orientation, mass, moveSpeed, 
 	if(!!this.name) {
 		this.initName();
 	}
+}
 
+Element.prototype.initAnimation = function() {
+	//stub
 };
-
-inherit(Element,EventEmitter);
 
 Element.prototype.initHP = function() {
 	//REFAIRE EN INTEGRANT DANS LE DIV ELEMENT LES HP
@@ -178,6 +187,9 @@ Element.prototype.update = function(dt, now) {
 };
 
 Element.prototype.move = function() {
+	// if(this.id == 6) {
+		// console.log(this.toMove);
+	// }
 	//todo
 	if(!!this.skipNextUpdateAndMove) {
 		this.skipNextUpdateAndMove = false;
@@ -500,9 +512,6 @@ Element.prototype.checkElementCollision = function( currentMovement, elements ) 
 	}
 };
 
-Element.prototype.checkElementCollision = function( currentMovement, elements ) {
-
-};
 
 Element.prototype.isAttacking = function() {
 	//todo

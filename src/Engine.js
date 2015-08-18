@@ -42,7 +42,10 @@ Engine.start = function(config) {
 			onJoinGame(message);
 		})
 		.on(Message['ACTION_SYNC'],function(message){
-			console.debug('TODO SYNC FROM SERVER');
+			Scene.parseData(message);
+		})
+		.on(Message['ACTION_SYNC_AVATAR'],function(message){
+			Scene.syncAvatarFromServer(message);
 		})
 }
 
@@ -71,8 +74,8 @@ var sendMessage = function(action,data) {
 		x: currentAvatar ? currentAvatar.position.x : 0,
 		y: currentAvatar ? currentAvatar.position.y : 0
 	};
-	console.debug('Send Message : '+action)
-	console.debug(data);
+	// console.debug('Send Message : '+action)
+	// console.debug(data);
 	Socket.emit(action,data);
 }
 
@@ -137,10 +140,14 @@ var onJoinGame = function(messageRaw) {
 		//current hp
 		message[Message.MESSAGE_CHAR][Message.MESSAGE_CURRENT_HP],
 		//deltashow
-		message[Message.MESSAGE_CHAR][Message.MESSAGE_DELTASHOW]
+		message[Message.MESSAGE_CHAR][Message.MESSAGE_DELTASHOW],
+		//deltashow
+		message[Message.MESSAGE_CHAR][Message.MESSAGE_SKIN],
+		//remote
+		false
 	);
 
-	currentAvatar.init(true);
+	currentAvatar.initSpeaker(true);
 
 	currentAvatar.on('movementStop',function(mouvement){
 		sendMessage(Message['ACTION_MOVE_STOP'], mouvement);
@@ -239,7 +246,6 @@ var onDownPushed = function() {
 }
 
 var onDownReleased = function() {
-	console.log('goDownStop');
 	currentAvatar.goingDown = false;
 	var data = {};
 	data[Message['MESSAGE_POSITION']] = {
@@ -252,7 +258,6 @@ var onDownReleased = function() {
 var onEnterPushed = function() {
 	currentAvatar.toggleSpeaking();
 	if(currentAvatar.speaking === true) {
-		console.log('sleep');
 		KeyboardAdapter.sleepListeners();
 	} else {
 		KeyboardAdapter.wakeupListeners();
@@ -283,5 +288,7 @@ var onConnectionError = function(err){
 	//dont do this to keep reconnection working
 	// Engine.stop();
 }
+
+window.Avatar = Avatar;
 
 module.exports = Engine;

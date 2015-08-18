@@ -6,8 +6,10 @@ var config = {
 	serverURL : 'http://localhost',
 	serverPort : '1337',
 	serverAssetURL : 'http://localhost:1081',
+	// avatarId : 6,
+	// sessionId : '89baf3ab3530a558acef59093bc7feb5'
 	avatarId : 1,
-	sessionId : '70c928925c9384f0fab58f11cea6815e'
+	sessionId : '73beae6a9660850d0cbdb3dbd4443092'
 };
 
 Engine.start(config);

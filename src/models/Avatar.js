@@ -2,14 +2,12 @@ var Element = require('./Element');
 var Speaker = require('./Speaker');
 var ServerConfig = require('../Config');
 var inherit = require('../tools/inherit');
-
-var Engine = require('../Engine');
 var Message = require('../Message')[ServerConfig.messageLevel];
 
-var Avatar = function( id, name, position, size, orientation, mass, moveSpeed, jumpSpeed, maxHP, HP, deltashow ) {
+var Avatar = function( id, name, position, size, orientation, mass, moveSpeed, jumpSpeed, maxHP, HP, deltashow, skin, remote ) {
 
 	this.domId = 'avatar_' + id + '_' + new Date().getTime() + '_' + Math.floor((Math.random()*1000000)+1); ;
-	Avatar._super.call(this, id, name, position, size, orientation, mass, moveSpeed, jumpSpeed, maxHP, HP, deltashow );
+	Avatar._super.call(this, id, name, position, size, orientation, mass, moveSpeed, jumpSpeed, maxHP, HP, deltashow, skin );
 
 	//speaking
 	this.speaking = false;
@@ -18,8 +16,12 @@ var Avatar = function( id, name, position, size, orientation, mass, moveSpeed, j
 	this.speaker;
 	this.closingSpeakerProcess;
 
+	this.remote = remote;
 	this.waitingForce = [];
+	this.userActions = {};
+	this.userActionIntegrated = 0;
 	this.userInputs = {};
+	this.userInputRemote = new Vector(0,0);
 	this.item_slot_head = null;
 	this.item_slot_foot = null;
 	this.item_slot_chest = null;
@@ -36,15 +38,12 @@ var Avatar = function( id, name, position, size, orientation, mass, moveSpeed, j
 inherit(Avatar,Element);
 
 Avatar.prototype.init = function(controlled) {
-	// Avatar._super.prototype.init.call(this);
-
-	this.initAnimation();
+	Avatar._super.prototype.init.call(this);
 
 	//set spritesheet
 	this.domElem.style.backgroundImage = "url("+ServerConfig.custom.serverAssetURL+"/spritesheet/char/"+this.id+"/spritesheet.png)";
 
-	//add speaker
-	this.initSpeaker(!controlled);
+	this.initSpeaker();
 }
 
 Avatar.prototype.initAnimation = function() {
@@ -59,8 +58,8 @@ Avatar.prototype.initAnimation = function() {
 	this.dictClass['front']			 = 'avatarAnimationFront';
 }
 
-Avatar.prototype.initSpeaker = function(readonly) {
-	this.speaker = new Speaker(this.domId, readonly) ;
+Avatar.prototype.initSpeaker = function() {
+	this.speaker = new Speaker(this.domId, this.remote) ;
 	this.speaker.init(this);
 }
 
@@ -134,6 +133,21 @@ Avatar.prototype.update = function(dt, now) {
 
 			this.emit('movementStop',input);
 			delete this.userInputs[id];
+		}
+	}
+
+	if(this.remote === true) {
+		//warning if we dont release left before right we integrate on full movement
+		if(this.userActions.indexOf('left') !== -1) {
+			this.toMove.x -= this.move_speed  * dt/1000 * Math.min(1,this.userActionIntegrated/100);
+			this.userActionIntegrated += dt;
+		}
+		else if(this.userActions.indexOf('right') !== -1) {
+			this.toMove.x += this.move_speed  * dt/1000 * Math.min(1,this.userActionIntegrated/100);
+			this.userActionIntegrated += dt;
+		}
+		else {
+			this.userActionIntegrated = 0;
 		}
 	}
 }
