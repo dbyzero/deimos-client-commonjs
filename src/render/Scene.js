@@ -32,7 +32,7 @@ Scene.init = function(data){
 }
 
 Scene.syncAvatarFromServer = function(dataAvatar) {
-	console.log(dataAvatar);
+	// console.log(dataAvatar);
 	syncAvatarFromServer(dataAvatar);
 }
 
@@ -46,7 +46,7 @@ Scene.parseData = function(data) {
 	var avatars = data[Message.AVATARS];
 	for(var k in avatars) {
 		if(syncAvatarFromServer(avatars[k])) {
-			avatarUpdated.push(parseInt(avatars[k][Message['MESSAGE_ELEMENT_ID']]));
+			avatarUpdated.push(parseInt(avatars[k].id));
 		}
 	}
 
@@ -57,6 +57,8 @@ Scene.parseData = function(data) {
 			Scene.avatars[av_id].destroy();
 		}
 	}
+
+	console.log(data);
 }
 
 Scene.update = function(dt) {
@@ -95,7 +97,7 @@ Scene.update = function(dt) {
 		var avatar = Scene.avatars[keys[i]];
 		avatar.move();
 		avatar.updateAnimation();
-		avatar.addingWaitingForces();
+		// avatar.addingWaitingForces();
 	}
 	//move and render Scene.projectiles !
 	keys = Object.keys(Scene.projectiles);
@@ -147,44 +149,7 @@ var renderCollistionArea = function(blocks) {
 }
 
 var syncAvatarFromServer = function(avatarData) {
-	var av_id = avatarData[Message.MESSAGE_ELEMENT_ID];
-
-	// //make special sync if it is the current avatarData
-	// if( deimos.Engine.avatarData !== undefined && 
-	// 	av_id === deimos.Engine.avatarData.serverid
-	// ) {
-	// 	deimos.Engine.avatarData.v_id] = new deimos.element.ServerAvatar(
-		// 		avatarData[_t.NAME],
-		// 		new org.dbyzero.tools.Vector(avatarData[_t.MESSAGE_POSITION].x, avatarData[_t.MESSAGE_POSITION].y),
-		// 		new org.dbyzero.tools.Vector(avatarData[_t.MESSAGE_VELOCITY].x, avatarData[_t.MESSAGE_VELOCITY].y),
-		// 		new org.dbyzero.tools.Vector(avatarData[_t.MESSAGE_ACCELERATION].x, avatarData[_t.MESSAGE_ACCELERATION].y),
-		// 		new org.dbyzero.tools.Vector(avatarData[_t.MESSAGE_SIZE].x, avatarData[_t.MESSAGE_SIZE].y),
-		// 		avatarData[_t.MESSAGE_MASS],
-		// 		new org.dbyzero.tools.Vector(avatarData[_t.MESSAGE_USER_INPUT_VELOCITY].x, avatarData[_t.MESSAGE_USER_INPUT_VELOCITY].y),
-		// 		av_id,
-		// 		avatarData[_t.MESSAGE_DELTASHOW]
-		// 	) ;
-		// 	avatar.oriented = avatarData[_t.MESSAGE_ANIMATION][_t.MESSAGE_DIRECTION];
-
-		// 	var skin = avatarData[_t.MESSAGE_SKIN];
-
-		// 	avatar.HP = avatarData[_t.MESSAGE_CURRENT_HP];
-		// 	avatar.maxHP = avatarData[_t.MESSAGE_HP];
-		// 	avatar.skin = skin;
-		// 	avatar.initAnimation();
-
-		// 	avatar.deltashow = avatarData[_t.MESSAGE_DELTASHOW];
-
-		// 	avatar.init();positionServer.x = avatarData[_t.MESSAGE_POSITION].x;
-	// 	deimos.Engine.avatarData.positionServer.y = avatarData[_t.MESSAGE_POSITION].y;
-	// 	deimos.Engine.currentLag = new Date().getTime() - avatarData[_t.MESSAGE_TIMESTAMP];
-	// 	deimos.Engine.ui.updateLag(deimos.Engine.currentLag);
-	// 	deimos.Engine.avatarData.correctPositionWithServer();
-
-	// 	//stop here if we don't want to show mirror
-	// 	if( deimos.Config.showOwnMirror === false )	return false;
-	// }
-
+	var av_id = avatarData[Message.ID];
 	var avatar = Scene.avatars[av_id];
 
 	if( avatar === undefined ) {
@@ -206,14 +171,12 @@ var syncAvatarFromServer = function(avatarData) {
 		Scene.addAvatar(avatar);
 	}
 
-	// //synchro des infos
+	//synchro des infos
 	avatar.moveSpeed		= avatarData[Message.MESSAGE_MOVE_SPEED];
 	avatar.jumpSpeed		= avatarData[Message.MESSAGE_JUMP_SPEED];
 	avatar.goingDown		= avatarData[Message.MESSAGE_GOING_DOWN];
 	avatar.velocity.x		= avatarData[Message.MESSAGE_VELOCITY].x;
 	avatar.velocity.y		= avatarData[Message.MESSAGE_VELOCITY].y;
-	avatar.position.y		= avatarData[Message.MESSAGE_POSITION].y;
-
 	//> 100px circle curently
 	if(
 		Math.pow(avatar.position.x - avatarData[Message.MESSAGE_POSITION].x,2) +
@@ -224,20 +187,17 @@ var syncAvatarFromServer = function(avatarData) {
 		avatar.position.y		= avatarData[Message.MESSAGE_POSITION].y;
 	}
 
+	avatar.serverPosition.x		= avatarData[Message.MESSAGE_POSITION].x;
+	avatar.serverPosition.y		= avatarData[Message.MESSAGE_POSITION].y;
+
 	avatar.acceleration.x	= avatarData[Message.MESSAGE_ACCELERATION].x;
 	avatar.acceleration.y	= avatarData[Message.MESSAGE_ACCELERATION].y;
 	avatar.isLanded			= avatarData[Message.MESSAGE_LANDED];
 	avatar.HP				= avatarData[Message.MESSAGE_CURRENT_HP];
 	avatar.maxHP			= avatarData[Message.MESSAGE_HP];
 	avatar.userActions		= avatarData[Message.MESSAGE_USER_INPUT];
-
-	// do not synchro position on fly to get smoothy movement
-	// if(avatar.isLanded === true)
-	// {
-	// }
-
-
-	avatar.saying = avatarData[Message.MESSAGE_SAYING];
+	avatar.orientation		= avatarData[Message.MESSAGE_ANIMATION][Message.MESSAGE_DIRECTION];
+	avatar.speaker.setText(avatarData[Message.MESSAGE_SAYING] , false);
 
 	avatar.render();
 	return true;

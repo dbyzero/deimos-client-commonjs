@@ -81,7 +81,7 @@ var sendMessage = function(action,data) {
 
 var sendSync = function() {
 	var data = {};
-	data[Message['MESSAGE_SAYING']] = currentAvatar.saying;
+	data[Message['MESSAGE_SAYING']] = currentAvatar.speaker.getText();
 	sendMessage(Message['ACTION_SYNC'],data);
 }
 
@@ -106,6 +106,7 @@ var onLogged = function(messageRaw) {
 }
 
 var onJoinGame = function(messageRaw) {
+	console.log('JOIN GAME');
 	var message = JSON.parse(messageRaw);
 
 	//1. create zone + create scene
@@ -114,7 +115,7 @@ var onJoinGame = function(messageRaw) {
 	//2. create avatar
 	currentAvatar = new Avatar(
 		//id
-		message[Message.MESSAGE_CHAR][Message.MESSAGE_ELEMENT_ID],
+		message[Message.MESSAGE_CHAR][Message.ID],
 		//name
 		message[Message.MESSAGE_CHAR][Message.NAME],
 		//position
@@ -154,23 +155,19 @@ var onJoinGame = function(messageRaw) {
 
 	})
 
-	currentAvatar.speaker.on('textChange',function(message){
-		currentAvatar.saying = message;
-		currentAvatar.lastSayed = new Date().getTime();
+	currentAvatar.speaker.on('textChange',function(txt){
+		console.log(txt);
 		sendSync();
 	}.bind(this));
 
 	Scene.addAvatar(currentAvatar);
 
-	//3. store avatar items ??
-	//=> not yet
-
-	//4. bind game keys
 	bindGameKeys();
 
-	//5. start loop
+
 	gameLoop.start(updateTick);
 	inGame = true;
+	Scene.parseData(message[Message.ACTION_SYNC]);
 }
 
 var bindGameKeys = function(avatar) {
@@ -206,12 +203,14 @@ var onLeftReleased = function() {
 
 var onUpPushed = function() {
 	if(!currentAvatar.isLanded == false && currentAvatar.speaking == false) {
-		var force = new UserMovement(
-			new Vector(0,parseInt('-'+currentAvatar.jump_speed)),
-			Message['JUMP']
-		);
-		currentAvatar.addForceNextStep(force.movement) ;
-		sendMessage(Message['ACTION_JUMP'],force);
+		// var force = new UserMovement(
+		// 	new Vector(0,parseInt('-'+currentAvatar.jump_speed)),
+		// 	Message['JUMP']
+		// );
+		// currentAvatar.addForceNextStep(force.movement) ;
+
+		currentAvatar.velocity.y -= parseInt('-'+currentAvatar.jump_speed);
+		sendMessage(Message['ACTION_JUMP'],{});
 
 	}
 }

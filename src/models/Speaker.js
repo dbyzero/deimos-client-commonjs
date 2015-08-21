@@ -36,8 +36,17 @@ Speaker.prototype.getText = function() {
 	return this.domElemTextArea.value ;
 },
 
-Speaker.prototype.setText = function(txt) {
+Speaker.prototype.setText = function(txt, sendEvent) {
 	this.domElemTextArea.value = txt;
+	if(!this.readonly && sendEvent) {
+		this.emit('textChange', txt)
+	}
+
+	if(txt.length > 0) {
+		this.show();
+	} else {
+		this.hide();
+	}
 },
 
 Speaker.prototype.show = function() {

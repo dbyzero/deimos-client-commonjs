@@ -11,13 +11,11 @@ var Avatar = function( id, name, position, size, orientation, mass, moveSpeed, j
 
 	//speaking
 	this.speaking = false;
-	this.lastSayed = 0;
-	this.saying = "";
 	this.speaker;
 	this.closingSpeakerProcess;
 
 	this.remote = remote;
-	this.waitingForce = [];
+	// this.waitingForce = [];
 	this.userActions = {};
 	this.userActionIntegrated = 0;
 	this.userInputs = {};
@@ -77,17 +75,17 @@ Avatar.prototype.removeUserInputs = function(type) {
 }
 
 //adding force next step
-Avatar.prototype.addForceNextStep = function(force) {
-	this.waitingForce.push(force) ;
-}
+// Avatar.prototype.addForceNextStep = function(force) {
+// 	this.waitingForce.push(force) ;
+// }
 
-Avatar.prototype.addingWaitingForces = function() {
-	var forces = this.waitingForce;
-	for(force in forces) {
-		this.velocity.add(forces[force]);
-		this.waitingForce.splice(0,1);
-	}
-}
+// Avatar.prototype.addingWaitingForces = function() {
+// 	var forces = this.waitingForce;
+// 	for(force in forces) {
+// 		this.velocity.add(forces[force]);
+// 		this.waitingForce.splice(0,1);
+// 	}
+// }
 
 Avatar.prototype.toggleSpeaking = function () {
 	this.speaking = !this.speaking;
@@ -96,9 +94,10 @@ Avatar.prototype.toggleSpeaking = function () {
 		this.speaker.show();
 	} else {
 		this.speaker.leaveFocus();
-		if(this.saying.length > 0) {
+		if(this.speaker.getText().length > 0) {
 			this.closingSpeakerProcess = setTimeout(
 				function(){
+					this.speaker.setText("", true);
 					this.speaker.hide();
 				}.bind(this),
 				ServerConfig.speakerCloseDelay
@@ -110,7 +109,6 @@ Avatar.prototype.toggleSpeaking = function () {
 }
 
 Avatar.prototype.update = function(dt, now) {
-
 	//call parent update
 	Avatar._super.prototype.update.call(this,dt,now);
 
@@ -137,19 +135,21 @@ Avatar.prototype.update = function(dt, now) {
 	}
 
 	if(this.remote === true) {
-		//warning if we dont release left before right we integrate on full movement
-		if(this.userActions.indexOf('left') !== -1) {
-			this.toMove.x -= this.move_speed  * dt/1000 * Math.min(1,this.userActionIntegrated/100);
-			this.userActionIntegrated += dt;
-		}
-		else if(this.userActions.indexOf('right') !== -1) {
-			this.toMove.x += this.move_speed  * dt/1000 * Math.min(1,this.userActionIntegrated/100);
-			this.userActionIntegrated += dt;
-		}
-		else {
+		if(this.userActions.length === 0) {
 			this.userActionIntegrated = 0;
+		} else {
+			if(this.userActions.indexOf('left') !== -1) {
+				this.toMove.x -= this.move_speed  * dt/1000 * Math.min(1,this.userActionIntegrated/100);
+				this.userActionIntegrated += dt;
+			}
+			if(this.userActions.indexOf('right') !== -1) {
+				this.toMove.x += this.move_speed * dt/1000 * Math.min(1,this.userActionIntegrated/100);
+				this.userActionIntegrated += dt;
+			}
 		}
 	}
+
+	this.postUpdate(dt, now);
 }
 
 module.exports = Avatar;

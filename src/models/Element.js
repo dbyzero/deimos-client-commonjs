@@ -26,6 +26,7 @@ var Element = function( id, name, position, size, orientation, mass, moveSpeed, 
 	this.skin = skin;
 
 	//trackers
+	this.serverPosition = new Vector(this.position.x, this.position.y);
 	this.lastAttack = null;
 	this.skipNextUpdateAndMove = false;
 	this.isLanded = false;
@@ -180,17 +181,44 @@ Element.prototype.update = function(dt, now) {
 	this.toMove.x += (this.velocity.x * dt/1000);
 	this.toMove.y += (this.velocity.y * dt/1000);
 
-	this.toMove.x = this.toMove.x;
-	this.toMove.y = this.toMove.y;
-
 	this.lastUpdate = now;
+
+	this.postUpdate(dt, now);
 };
 
+Element.prototype.postUpdate = function(dt, now) {
+	//to correct element position with server, on a same direction
+	// 1. if the element is too far on server, we add movement to sync both position.
+	// 2. if the element is too far on client, we negate movement to sync both position.
+	if( this.orientation === 'left' ) {
+		if(this.serverPosition.x < this.position.x) {
+			//the Math.min is used to not go through the server position
+			this.toMove.x = -1 * Math.min(
+				(this.move_speed * dt/1000),
+				(this.position.x - this.serverPosition.x)
+			);
+		}
+		//It dont work because server sync is slower than framerate
+		// if(this.serverPosition.x > this.position.x) {
+		// 	this.toMove.x = 0;
+		// }
+	}
+	if( this.orientation === 'right' ) {
+		if(this.serverPosition.x > this.position.x) {
+			//the Math.min is used to not go through the server position
+			this.toMove.x = Math.min(
+				(this.move_speed * dt/1000),
+				(this.serverPosition.x - this.position.x)
+			);
+		}
+		//It dont work because server sync is slower than framerate
+		// if(this.serverPosition.x < this.position.x) {
+		// 	this.toMove.x = 0;
+		// }
+	}
+}
+
 Element.prototype.move = function() {
-	// if(this.id == 6) {
-		// console.log(this.toMove);
-	// }
-	//todo
 	if(!!this.skipNextUpdateAndMove) {
 		this.skipNextUpdateAndMove = false;
 		return;
