@@ -103,7 +103,7 @@ Avatar.prototype.update = function(dt, now) {
 		}
 	}
 
-	this.postUpdate(dt, now);
+	// this.postUpdate(dt, now);
 }
 
 module.exports = Avatar;

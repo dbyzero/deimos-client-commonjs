@@ -38,6 +38,10 @@ Monster.prototype.init = function(controlled) {
 	this.initSpeaker(false);
 }
 
+Monster.prototype.update = function(dt, now) {
+	Monster._super.prototype.update.call(this, dt, now);
+}
+
 Monster.prototype.onBlockCollisionLeft = function() {
 	invertDirection.call(this);
 }
