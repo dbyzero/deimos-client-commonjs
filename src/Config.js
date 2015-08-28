@@ -12,6 +12,6 @@ Config.DELTA_SERVER_SYNC = 5000;
 Config.showOwnMirror = false;
 Config.speakerCloseDelay = 5000;
 
-Config.Gravity = new Vector(0, 300);
+Config.Gravity = new Vector(0, 1000);
 
 module.exports = Config;

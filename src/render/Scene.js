@@ -80,9 +80,6 @@ Scene.parseData = function(data) {
 			Scene.monsters[m_id].destroy();
 		}
 	}
-	window.Scene = Scene;
-
-	// console.log(data);
 }
 
 Scene.update = function(dt) {
@@ -232,10 +229,10 @@ var syncAvatarFromServer = function(avatarData) {
 	avatar.speaker.setText(avatarData[Message.MESSAGE_SAYING]);
 
 	if(avatarData[Message.MESSAGE_SAYING].length > 0) {
-		this.show();
+		avatar.speaker.show();
 	} else {
 		if(avatar.speaking === false) {
-			this.hide();
+			avatar.speaker.hide();
 		}
 	}
 
@@ -275,7 +272,7 @@ var syncMonsterFromServer = function( monsterData ) {
 	monster.position.y		= monsterData[Message.MESSAGE_POSITION].y;
 	monster.acceleration.x	= monsterData[Message.MESSAGE_ACCELERATION].x;
 	monster.acceleration.y	= monsterData[Message.MESSAGE_ACCELERATION].y;
-	monster.orientation		= monsterData[Message.MESSAGE_ORIENTATION];
+	monster.orientation		= monsterData[Message.MESSAGE_ANIMATION][Message.MESSAGE_DIRECTION];
 	monster.HP = monsterData[Message['MESSAGE_CURRENT_HP']];
 	monster.maxHP = monsterData[Message['MESSAGE_HP']];
 

@@ -51,10 +51,7 @@ Speaker.prototype.show = function() {
 Speaker.prototype.hide = function() {
 	this.domElem.style.display = 'none';
 	this.domElemTextArea.value = '';
-	if(this.readonly !== true)
-	{
-		this.leaveFocus();
-	}
+	this.leaveFocus();
 },
 
 Speaker.prototype.leaveFocus = function() {

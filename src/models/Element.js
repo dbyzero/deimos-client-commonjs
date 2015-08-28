@@ -114,7 +114,7 @@ Element.prototype.toggleSpeaking = function () {
 					this.speaker.setText("", true);
 					this.speaker.hide();
 					if(!this.speaker.readonly) {
-						this.speaker.emit('textChange', txt)
+						this.speaker.emit('textChange', "");
 					}
 					this.speaker.hide();
 				}.bind(this),
@@ -214,8 +214,6 @@ Element.prototype.update = function(dt, now) {
 	this.toMove.y += returnIntegrate.dx.y;
 	this.velocity.x += returnIntegrate.dv.x;
 	this.velocity.y += returnIntegrate.dv.y;
-	this.toMove.x += (this.velocity.x * dt/1000);
-	this.toMove.y += (this.velocity.y * dt/1000);
 
 	this.lastUpdate = now;
 

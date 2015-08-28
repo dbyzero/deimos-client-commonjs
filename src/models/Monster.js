@@ -32,7 +32,7 @@ Monster.prototype.init = function(controlled) {
 	// 	"/"+
 	// 	this.color+
 	// 	"/spritesheet.png)";
-	this.domElem.style.backgroundColor = "pink";
+	this.domElem.style.backgroundColor = '#'+this.color;
 
 
 	this.initSpeaker(false);

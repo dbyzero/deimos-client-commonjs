@@ -290,6 +290,4 @@ var onConnectionError = function(err){
 	// Engine.stop();
 }
 
-window.Avatar = Avatar;
-
 module.exports = Engine;
