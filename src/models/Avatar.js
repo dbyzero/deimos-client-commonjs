@@ -1,5 +1,4 @@
 var Element = require('./Element');
-var Speaker = require('./Speaker');
 var ServerConfig = require('../Config');
 var inherit = require('../tools/inherit');
 var Message = require('../Message')[ServerConfig.messageLevel];
@@ -9,13 +8,7 @@ var Avatar = function( id, name, position, size, orientation, mass, moveSpeed, j
 	this.domId = 'avatar_' + id + '_' + new Date().getTime() + '_' + Math.floor((Math.random()*1000000)+1); ;
 	Avatar._super.call(this, id, name, position, size, orientation, mass, moveSpeed, jumpSpeed, maxHP, HP, deltashow, skin );
 
-	//speaking
-	this.speaking = false;
-	this.speaker;
-	this.closingSpeakerProcess;
-
 	this.remote = remote;
-	// this.waitingForce = [];
 	this.userActions = {};
 	this.userActionIntegrated = 0;
 	this.userInputs = {};
@@ -41,7 +34,7 @@ Avatar.prototype.init = function(controlled) {
 	//set spritesheet
 	this.domElem.style.backgroundImage = "url("+ServerConfig.custom.serverAssetURL+"/spritesheet/char/"+this.id+"/spritesheet.png)";
 
-	this.initSpeaker();
+	this.initSpeaker(!this.remote);
 }
 
 Avatar.prototype.initAnimation = function() {
@@ -56,11 +49,6 @@ Avatar.prototype.initAnimation = function() {
 	this.dictClass['front']			 = 'avatarAnimationFront';
 }
 
-Avatar.prototype.initSpeaker = function() {
-	this.speaker = new Speaker(this.domId, this.remote) ;
-	this.speaker.init(this);
-}
-
 Avatar.prototype.addUserInputs = function(mvt) {
 	this.userInputs[mvt.id] = mvt ;
 }
@@ -70,40 +58,6 @@ Avatar.prototype.removeUserInputs = function(type) {
 		var input = this.userInputs[id];
 		if(input.type === type) {
 			input.duration = new Date().getTime() - input.startTimestamp;
-		}
-	}
-}
-
-//adding force next step
-// Avatar.prototype.addForceNextStep = function(force) {
-// 	this.waitingForce.push(force) ;
-// }
-
-// Avatar.prototype.addingWaitingForces = function() {
-// 	var forces = this.waitingForce;
-// 	for(force in forces) {
-// 		this.velocity.add(forces[force]);
-// 		this.waitingForce.splice(0,1);
-// 	}
-// }
-
-Avatar.prototype.toggleSpeaking = function () {
-	this.speaking = !this.speaking;
-	if(this.speaking) {
-		clearTimeout(this.closingSpeakerProcess);
-		this.speaker.show();
-	} else {
-		this.speaker.leaveFocus();
-		if(this.speaker.getText().length > 0) {
-			this.closingSpeakerProcess = setTimeout(
-				function(){
-					this.speaker.setText("", true);
-					this.speaker.hide();
-				}.bind(this),
-				ServerConfig.speakerCloseDelay
-			);
-		} else {
-			this.speaker.hide();
 		}
 	}
 }

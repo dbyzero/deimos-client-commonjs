@@ -1,9 +1,9 @@
 var EventEmitter = require('events').EventEmitter;
 var inherit = require('../tools/inherit');
 
-Speaker = function (avatar, readonly) {
+Speaker = function (avatar, rw) {
 	this.id = 'speaker_' + avatar.id + '_' + Math.floor((Math.random()*1000000)+1);
-	this.readonly = readonly;
+	this.readonly = !rw;
 }
 
 inherit(Speaker,EventEmitter);
@@ -36,17 +36,8 @@ Speaker.prototype.getText = function() {
 	return this.domElemTextArea.value ;
 },
 
-Speaker.prototype.setText = function(txt, sendEvent) {
+Speaker.prototype.setText = function(txt) {
 	this.domElemTextArea.value = txt;
-	if(!this.readonly && sendEvent) {
-		this.emit('textChange', txt)
-	}
-
-	if(txt.length > 0) {
-		this.show();
-	} else {
-		this.hide();
-	}
 },
 
 Speaker.prototype.show = function() {

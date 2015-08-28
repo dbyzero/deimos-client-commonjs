@@ -2,9 +2,15 @@ var ServerConfig = require('../Config');
 var Vector = require('../tools/Vector')
 var Physics = require('../tools/Physics')
 var EventEmitter = require('events').EventEmitter;
+var Speaker = require('./Speaker');
 var inherit = require('../tools/inherit');
 
 var Element = function( id, name, position, size, orientation, mass, moveSpeed, jumpSpeed, maxHP, HP, deltashow, skin ) {
+	//speaking
+	this.speaking = false;
+	this.speaker;
+	this.closingSpeakerProcess;
+
 	//attributs
 	this.id = id;
 	this.name = name;
@@ -93,6 +99,36 @@ Element.prototype.init = function() {
 	if(!!this.name) {
 		this.initName();
 	}
+}
+
+Element.prototype.toggleSpeaking = function () {
+	this.speaking = !this.speaking;
+	if(this.speaking) {
+		clearTimeout(this.closingSpeakerProcess);
+		this.speaker.show();
+	} else {
+		this.speaker.leaveFocus();
+		if(this.speaker.getText().length > 0) {
+			this.closingSpeakerProcess = setTimeout(
+				function(){
+					this.speaker.setText("", true);
+					this.speaker.hide();
+					if(!this.speaker.readonly) {
+						this.speaker.emit('textChange', txt)
+					}
+					this.speaker.hide();
+				}.bind(this),
+				ServerConfig.speakerCloseDelay
+			);
+		} else {
+			this.speaker.hide();
+		}
+	}
+}
+
+Element.prototype.initSpeaker = function(editable) {
+	this.speaker = new Speaker(this.domId, editable) ;
+	this.speaker.init(this);
 }
 
 Element.prototype.initAnimation = function() {
@@ -432,7 +468,7 @@ Element.prototype.checkElementCollision = function( currentMovement, elements ) 
 		element = elements[keys[i]];
 		//collision from avatar bottom
 		if(currentMovement.y > 0) {
-			testCollision = SegmentsCollision(
+			testCollision = Physics.SegmentsCollision(
 				this.vertexBL,
 				{x:this.position.x,y:this.position.y + this.size.y},
 				element.vertexTL,
@@ -444,7 +480,7 @@ Element.prototype.checkElementCollision = function( currentMovement, elements ) 
 				continue;
 			}
 
-			testCollision = SegmentsCollision(
+			testCollision = Physics.SegmentsCollision(
 				this.vertexBR,
 				{x:this.position.x + this.size.x,y:this.position.y + this.size.y},
 				element.vertexTL,
@@ -459,7 +495,7 @@ Element.prototype.checkElementCollision = function( currentMovement, elements ) 
 
 		//collision from avatar top
 		if(currentMovement.y < 0) {
-			testCollision = SegmentsCollision(
+			testCollision = Physics.SegmentsCollision(
 				this.vertexTL,
 				{x:this.position.x,y:this.position.y},
 				element.vertexBL,
@@ -471,7 +507,7 @@ Element.prototype.checkElementCollision = function( currentMovement, elements ) 
 				continue;
 			}
 
-			testCollision = SegmentsCollision(
+			testCollision = Physics.SegmentsCollision(
 				this.vertexTR,
 				{x:this.position.x,y:this.position.y},
 				element.vertexBL,
@@ -486,7 +522,7 @@ Element.prototype.checkElementCollision = function( currentMovement, elements ) 
 
 		//collision from avatar left
 		if(currentMovement.x < 0) {
-			testCollision = SegmentsCollision(
+			testCollision = Physics.SegmentsCollision(
 				this.vertexTL,
 				{x:this.position.x,y:this.position.y},
 				element.vertexTR,
@@ -498,7 +534,7 @@ Element.prototype.checkElementCollision = function( currentMovement, elements ) 
 				continue;
 			}
 
-			testCollision = SegmentsCollision(
+			testCollision = Physics.SegmentsCollision(
 				this.vertexBL,
 				{x:this.position.x,y:this.position.y + this.size.y},
 				element.vertexTR,
@@ -513,7 +549,7 @@ Element.prototype.checkElementCollision = function( currentMovement, elements ) 
 
 		//collision from avatar right
 		if(currentMovement.x > 0) {
-			testCollision = SegmentsCollision(
+			testCollision = Physics.SegmentsCollision(
 				this.vertexTR,
 				{x:this.position.x + this.size.x,y:this.position.y},
 				element.vertexTL,
@@ -525,7 +561,7 @@ Element.prototype.checkElementCollision = function( currentMovement, elements ) 
 				continue;
 			}
 
-			testCollision = SegmentsCollision(
+			testCollision = Physics.SegmentsCollision(
 				this.vertexBR,
 				{x:this.position.x + this.size.x,y:this.position.y + this.size.y},
 				element.vertexTL,

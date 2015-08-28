@@ -2,6 +2,7 @@ var ServerConfig = require('../Config');
 var Message = require('../Message')[ServerConfig.messageLevel];
 
 var Avatar = require('../models/Avatar');
+var Monster = require('../models/Monster');
 
 var Scene = {};
 Scene.items			= {};
@@ -36,6 +37,11 @@ Scene.syncAvatarFromServer = function(dataAvatar) {
 	syncAvatarFromServer(dataAvatar);
 }
 
+Scene.syncMonsterFromServer = function(dataAvatar) {
+	// console.log(dataAvatar);
+	syncMonsterFromServer(dataAvatar);
+}
+
 Scene.parseData = function(data) {
 	// console.log(data);
 	/**
@@ -58,7 +64,25 @@ Scene.parseData = function(data) {
 		}
 	}
 
-	console.log(data);
+	//sync monster
+	var monsterUpdated = [];
+	var monsters = data[Message.MONSTERS];
+	for(var k in monsters) {
+		if(syncMonsterFromServer(monsters[k])) {
+			monsterUpdated.push(parseInt(monsters[k].id));
+		}
+	}
+
+	//clean monster
+	for(var i in Scene.monsters) {
+		var m_id = Scene.monsters[i].id;
+		if(monsterUpdated.indexOf(m_id) === -1) {
+			Scene.monsters[m_id].destroy();
+		}
+	}
+	window.Scene = Scene;
+
+	// console.log(data);
 }
 
 Scene.update = function(dt) {
@@ -124,6 +148,14 @@ Scene.addAvatar = function(avatar) {
 	}
 	Scene.avatars[avatar.id] = avatar;
 	domElemScene.appendChild(avatar.domElem)
+}
+
+Scene.addMonster = function(monster) {
+	if(!monster || !monster.id) {
+		throw new Error('Invalid monster');
+	}
+	Scene.monsters[monster.id] = monster;
+	domElemScene.appendChild(monster.domElem)
 }
 
 var renderCollistionArea = function(blocks) {
@@ -197,11 +229,60 @@ var syncAvatarFromServer = function(avatarData) {
 	avatar.maxHP			= avatarData[Message.MESSAGE_HP];
 	avatar.userActions		= avatarData[Message.MESSAGE_USER_INPUT];
 	avatar.orientation		= avatarData[Message.MESSAGE_ANIMATION][Message.MESSAGE_DIRECTION];
-	avatar.speaker.setText(avatarData[Message.MESSAGE_SAYING] , false);
+	avatar.speaker.setText(avatarData[Message.MESSAGE_SAYING]);
+
+	if(avatarData[Message.MESSAGE_SAYING].length > 0) {
+		this.show();
+	} else {
+		if(avatar.speaking === false) {
+			this.hide();
+		}
+	}
 
 	avatar.render();
 	return true;
 
+}
+
+var syncMonsterFromServer = function( monsterData ) {
+	//make it if needed
+	var monster = Scene.monsters[monsterData[Message['ID']]];
+	if(monster === undefined) {
+		monster = new Monster(
+			monsterData[Message['ID']],
+			monsterData[Message['NAME']],
+			new Vector(monsterData[Message['MESSAGE_POSITION']].x,monsterData[Message['MESSAGE_POSITION']].y),
+			monsterData[Message['MESSAGE_SIZE']],
+			monsterData[Message['MESSAGE_ORIENTATION']],
+			monsterData[Message['MESSAGE_MASS']],
+			monsterData[Message['MESSAGE_MOVE_SPEED']],
+			monsterData[Message['MESSAGE_JUMP_SPEED']],
+			monsterData[Message['MESSAGE_HP']],
+			monsterData[Message['MESSAGE__CURRENT_HP']],
+			monsterData[Message['MESSAGE_DELTASHOW']],
+			monsterData[Message['MESSAGE_ELEMENT_ID']],
+			monsterData[Message['MESSAGE_SKIN']],
+			monsterData[Message['MESSAGE_COLOR']]
+		);
+		monster.HP = monsterData[Message['MESSAGE_CURRENT_HP']];
+		monster.maxHP = monsterData[Message['MESSAGE_HP']];
+		monster.init();
+		Scene.addMonster(monster);
+	}
+	monster.velocity.x		= monsterData[Message.MESSAGE_VELOCITY].x;
+	monster.velocity.y		= monsterData[Message.MESSAGE_VELOCITY].y;
+	monster.position.x		= monsterData[Message.MESSAGE_POSITION].x;
+	monster.position.y		= monsterData[Message.MESSAGE_POSITION].y;
+	monster.acceleration.x	= monsterData[Message.MESSAGE_ACCELERATION].x;
+	monster.acceleration.y	= monsterData[Message.MESSAGE_ACCELERATION].y;
+	monster.orientation		= monsterData[Message.MESSAGE_ORIENTATION];
+	monster.HP = monsterData[Message['MESSAGE_CURRENT_HP']];
+	monster.maxHP = monsterData[Message['MESSAGE_HP']];
+
+	// console.log(monster);
+
+	monster.render();
+	return true;
 }
 
 

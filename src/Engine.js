@@ -47,6 +47,9 @@ Engine.start = function(config) {
 		.on(Message['ACTION_SYNC_AVATAR'],function(message){
 			Scene.syncAvatarFromServer(message);
 		})
+		.on(Message['ACTION_SYNC_MONSTER'],function(message){
+			Scene.syncMonsterFromServer(message);
+		});
 }
 
 Engine.stop = function() {
@@ -156,7 +159,6 @@ var onJoinGame = function(messageRaw) {
 	})
 
 	currentAvatar.speaker.on('textChange',function(txt){
-		console.log(txt);
 		sendSync();
 	}.bind(this));
 
