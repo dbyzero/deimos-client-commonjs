@@ -211,7 +211,7 @@ var onUpPushed = function() {
 		// );
 		// currentAvatar.addForceNextStep(force.movement) ;
 
-		currentAvatar.velocity.y -= parseInt('-'+currentAvatar.jump_speed);
+		currentAvatar.velocity.y -= parseFloat(-currentAvatar.jump_speed);
 		sendMessage(Message['ACTION_JUMP'],{});
 
 	}

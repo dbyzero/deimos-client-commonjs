@@ -69,7 +69,7 @@ var Element = function( id, name, position, size, orientation, mass, moveSpeed, 
 	dom_elem.setAttribute("id",this.domId);
 
 	dom_elem.style.width = parseInt(this.size.x + this.deltashow.x*2)+'px';
-	dom_elem.style.height  = parseInt(this.size.y + this.deltashow.y*2)+'px';
+	dom_elem.style.height  = parseInt(this.size.y + this.deltashow.y)+'px';
 
 	dom_elem.style.display  = 'block';
 	dom_elem.style.position  = 'absolute';
@@ -323,7 +323,9 @@ Element.prototype.move = function() {
 
 Element.prototype.render = function() {
 	if(this.position !== undefined) {
-		var translation = "translate3d("+parseInt(this.position.x - parseInt(this.deltashow.x))+"px,"+parseInt(this.position.y - parseInt(this.deltashow.y))+"px,0px)";
+		var X = parseInt(this.position.x - parseInt(this.deltashow.x));
+		var Y = parseInt(this.position.y - parseInt(this.deltashow.y));
+		var translation = "translate3d("+X+"px,"+Y+"px,0px)";
 		this.domElem.style.transform = translation;
 		this.domElem.style.webkitTransform = translation;
 
@@ -665,7 +667,7 @@ Element.prototype.onAreaCollisionLeft = function() {
 };
 
 Element.prototype.onElementCollision = function(collisionCoord, collisionElement) {
-	collisionElement.destroy();
+	// collisionElement.destroy();
 };
 
 Element.prototype.onElementCollisionRight = function(collisionCoord, collisionElement) {

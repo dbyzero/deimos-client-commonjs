@@ -266,15 +266,15 @@ var syncMonsterFromServer = function( monsterData ) {
 		monster.init();
 		Scene.addMonster(monster);
 	}
-	monster.velocity.x		= monsterData[Message.MESSAGE_VELOCITY].x;
-	monster.velocity.y		= monsterData[Message.MESSAGE_VELOCITY].y;
-	monster.position.x		= monsterData[Message.MESSAGE_POSITION].x;
-	monster.position.y		= monsterData[Message.MESSAGE_POSITION].y;
-	monster.acceleration.x	= monsterData[Message.MESSAGE_ACCELERATION].x;
-	monster.acceleration.y	= monsterData[Message.MESSAGE_ACCELERATION].y;
-	monster.orientation		= monsterData[Message.MESSAGE_ANIMATION][Message.MESSAGE_DIRECTION];
-	monster.HP = monsterData[Message['MESSAGE_CURRENT_HP']];
-	monster.maxHP = monsterData[Message['MESSAGE_HP']];
+	monster.velocity.x			= monsterData[Message.MESSAGE_VELOCITY].x;
+	monster.velocity.y			= monsterData[Message.MESSAGE_VELOCITY].y;
+	monster.serverPosition.x	= monsterData[Message.MESSAGE_POSITION].x;
+	monster.serverPosition.y	= monsterData[Message.MESSAGE_POSITION].y;
+	monster.acceleration.x		= monsterData[Message.MESSAGE_ACCELERATION].x;
+	monster.acceleration.y		= monsterData[Message.MESSAGE_ACCELERATION].y;
+	monster.orientation			= monsterData[Message.MESSAGE_ANIMATION][Message.MESSAGE_DIRECTION];
+	monster.HP					= monsterData[Message['MESSAGE_CURRENT_HP']];
+	monster.maxHP				= monsterData[Message['MESSAGE_HP']];
 
 	// console.log(monster);
 
@@ -284,3 +284,7 @@ var syncMonsterFromServer = function( monsterData ) {
 
 
 module.exports = Scene;
+
+if(ServerConfig.mode === 'debug') {
+	window.DeimosScene = Scene;
+}

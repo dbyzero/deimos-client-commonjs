@@ -42,6 +42,21 @@ Monster.prototype.update = function(dt, now) {
 	Monster._super.prototype.update.call(this, dt, now);
 }
 
+Monster.prototype.postUpdate = function(dt, now) {
+	Monster._super.prototype.postUpdate.call(this, dt, now);
+	//speed up movement to reach server position
+	if( this.orientation === 'left' ) {
+		if(this.serverPosition.x < this.position.x) {
+			this.position.x -= 1;
+		}
+	}
+	if( this.orientation === 'right' ) {
+		if(this.serverPosition.x > this.position.x) {
+			this.position.x += 1;
+		}
+	}
+}
+
 Monster.prototype.onBlockCollisionLeft = function() {
 	invertDirection.call(this);
 }
@@ -59,7 +74,7 @@ Monster.prototype.onAreaCollisionRight = function() {
 }
 
 var invertDirection = function() {
-	this.velocity.x = -1*parseInt(this.velocity.x);
+	this.velocity.x = -1*parseFloat(this.velocity.x);
 }
 
 Monster.prototype.initAnimation = function() {

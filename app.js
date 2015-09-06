@@ -9,7 +9,7 @@ var config = {
 	// avatarId : 6,
 	// sessionId : '95e1f5de8f1b8b82b8ab78b1cd068764'
 	avatarId : 1,
-	sessionId : '475ae7ea6c90055498257ea4fa3a90a6'
+	sessionId : '026eb1032db555b4fc27acd7afa3413c'
 };
 
 Engine.start(config);
