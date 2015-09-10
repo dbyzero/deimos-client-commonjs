@@ -8,7 +8,7 @@ var inherit = require('../tools/inherit');
 var Element = function( id, name, position, size, orientation, mass, moveSpeed, jumpSpeed, maxHP, HP, deltashow, skin ) {
 	//speaking
 	this.speaking = false;
-	this.speaker;
+	this.speaker = null;
 	this.closingSpeakerProcess;
 
 	//attributs
@@ -83,6 +83,9 @@ var Element = function( id, name, position, size, orientation, mass, moveSpeed, 
 	this.domElem = dom_elem;
 	this.domElemWidth = this.domElem.offsetWidth;//usefull for positionning name and speaker
 	this.domElemHeight = this.domElem.offsetHeight;//usefull for positionning name and speaker
+
+	this.type = 'element';
+	this.removed = false;
 
 	this.init();
 };
@@ -176,6 +179,7 @@ Element.prototype.initName = function() {
 };
 
 Element.prototype.destroy= function() {
+	this.removed = true;
 	this.cleanDom();
 };
 
@@ -185,9 +189,17 @@ Element.prototype.cleanDom = function() {
 };
 
 Element.prototype.cleanDomElem = function() {
-	var nodeAvatar = this.domElem;
-	var parentNode = nodeAvatar.parentNode;
-	if(parentNode) parentNode.removeChild(nodeAvatar);
+	if(this.speaker !== null) {
+		this.speaker.destroy();
+	}
+	if(this.domElem) {
+		var nodeAvatar = this.domElem;
+		var parentNode = nodeAvatar.parentNode;
+		if(parentNode) parentNode.removeChild(nodeAvatar);
+		delete this.domName;
+		delete this.domHP;
+		delete this.domElem;
+	}
 };
 
 Element.prototype.update = function(dt, now) {
@@ -221,35 +233,36 @@ Element.prototype.update = function(dt, now) {
 };
 
 Element.prototype.postUpdate = function(dt, now) {
-	//to correct element position with server, on a same direction
-	// 1. if the element is too far on server, we add movement to sync both position.
-	// 2. if the element is too far on client, we negate movement to sync both position.
-	if( this.orientation === 'left' ) {
-		if(this.serverPosition.x < this.position.x) {
-			//the Math.min is used to not go through the server position
-			this.toMove.x = -1 * Math.min(
-				(this.move_speed * dt/1000),
-				(this.position.x - this.serverPosition.x)
-			);
-		}
-		//It dont work because server sync is slower than framerate
-		// if(this.serverPosition.x > this.position.x) {
-		// 	this.toMove.x = 0;
-		// }
-	}
-	if( this.orientation === 'right' ) {
-		if(this.serverPosition.x > this.position.x) {
-			//the Math.min is used to not go through the server position
-			this.toMove.x = Math.min(
-				(this.move_speed * dt/1000),
-				(this.serverPosition.x - this.position.x)
-			);
-		}
-		//It dont work because server sync is slower than framerate
-		// if(this.serverPosition.x < this.position.x) {
-		// 	this.toMove.x = 0;
-		// }
-	}
+	//THIS CODE DONT WORK AT ALL !!!
+	// //to correct element position with server, on a same direction
+	// // 1. if the element is too far on server, we add movement to sync both position.
+	// // 2. if the element is too far on client, we negate movement to sync both position.
+	// if( this.orientation === 'left' ) {
+	// 	if(this.serverPosition.x < this.position.x) {
+	// 		//the Math.min is used to not go through the server position
+	// 		this.toMove.x = -1 * Math.min(
+	// 			(this.move_speed * dt/1000),
+	// 			(this.position.x - this.serverPosition.x)
+	// 		);
+	// 	}
+	// 	//It dont work because server sync is slower than framerate
+	// 	// if(this.serverPosition.x > this.position.x) {
+	// 	// 	this.toMove.x = 0;
+	// 	// }
+	// }
+	// if( this.orientation === 'right' ) {
+	// 	if(this.serverPosition.x > this.position.x) {
+	// 		//the Math.min is used to not go through the server position
+	// 		this.toMove.x = Math.min(
+	// 			(this.move_speed * dt/1000),
+	// 			(this.serverPosition.x - this.position.x)
+	// 		);
+	// 	}
+	// 	//It dont work because server sync is slower than framerate
+	// 	// if(this.serverPosition.x < this.position.x) {
+	// 	// 	this.toMove.x = 0;
+	// 	// }
+	// }
 }
 
 Element.prototype.move = function() {
@@ -291,6 +304,7 @@ Element.prototype.move = function() {
 	//colision with bloacks
 	if(this.collisionTypeEnabled['blocks']) this.checkBlocksCollision( currentMovement );
 	if(this.collisionTypeEnabled['bonus']) this.checkElementCollision( currentMovement, ServerConfig.scene.items );
+	if(this.collisionTypeEnabled['avatars']) this.checkElementCollision( currentMovement, ServerConfig.scene.avatars );
 	if(this.collisionTypeEnabled['monsters']) this.checkElementCollision( currentMovement, ServerConfig.scene.monsters );
 	if(this.collisionTypeEnabled['projectiles']) this.checkElementCollision( currentMovement, ServerConfig.scene.projectiles );
 
@@ -322,7 +336,7 @@ Element.prototype.move = function() {
 };
 
 Element.prototype.render = function() {
-	if(this.position !== undefined) {
+	if(this.position !== undefined && this.removed === false) {
 		var X = parseInt(this.position.x - parseInt(this.deltashow.x));
 		var Y = parseInt(this.position.y - parseInt(this.deltashow.y));
 		var translation = "translate3d("+X+"px,"+Y+"px,0px)";

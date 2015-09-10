@@ -3,6 +3,7 @@ var Message = require('../Message')[ServerConfig.messageLevel];
 
 var Avatar = require('../models/Avatar');
 var Monster = require('../models/Monster');
+var Item = require('../models/Item');
 
 var Scene = {};
 Scene.items			= {};
@@ -33,13 +34,19 @@ Scene.init = function(data){
 }
 
 Scene.syncAvatarFromServer = function(dataAvatar) {
-	// console.log(dataAvatar);
 	syncAvatarFromServer(dataAvatar);
 }
 
-Scene.syncMonsterFromServer = function(dataAvatar) {
-	// console.log(dataAvatar);
-	syncMonsterFromServer(dataAvatar);
+Scene.syncMonsterFromServer = function(dataMonster) {
+	syncMonsterFromServer(dataMonster);
+}
+
+Scene.syncItemFromServer = function(dataItem) {
+	syncItemFromServer(dataItem);
+}
+
+Scene.syncProjectileFromServer = function(dataItem) {
+	syncProjectileFromServer(dataItem);
 }
 
 Scene.parseData = function(data) {
@@ -55,7 +62,6 @@ Scene.parseData = function(data) {
 			avatarUpdated.push(parseInt(avatars[k].id));
 		}
 	}
-
 	//clean avatar
 	for(var i in Scene.avatars) {
 		var av_id = Scene.avatars[i].id;
@@ -72,12 +78,27 @@ Scene.parseData = function(data) {
 			monsterUpdated.push(parseInt(monsters[k].id));
 		}
 	}
-
 	//clean monster
 	for(var i in Scene.monsters) {
 		var m_id = Scene.monsters[i].id;
 		if(monsterUpdated.indexOf(m_id) === -1) {
 			Scene.monsters[m_id].destroy();
+		}
+	}
+
+	//sync item
+	var itemUpdated = [];
+	var items = data[Message.ITEMS];
+	for(var k in items) {
+		if(syncItemFromServer(items[k])) {
+			itemUpdated.push(parseInt(items[k].id));
+		}
+	}
+	//clean items
+	for(var i in Scene.items) {
+		var i_id = Scene.items[i].id;
+		if(itemUpdated.indexOf(i_id) === -1) {
+			Scene.items[i_id].destroy();
 		}
 	}
 }
@@ -200,24 +221,28 @@ var syncAvatarFromServer = function(avatarData) {
 		Scene.addAvatar(avatar);
 	}
 
+	if(avatar.removed) {
+		return false;
+	}
+
 	//synchro des infos
 	avatar.moveSpeed		= avatarData[Message.MESSAGE_MOVE_SPEED];
 	avatar.jumpSpeed		= avatarData[Message.MESSAGE_JUMP_SPEED];
 	avatar.goingDown		= avatarData[Message.MESSAGE_GOING_DOWN];
 	avatar.velocity.x		= avatarData[Message.MESSAGE_VELOCITY].x;
 	avatar.velocity.y		= avatarData[Message.MESSAGE_VELOCITY].y;
+
+	avatar.serverPosition.x		= avatarData[Message.MESSAGE_POSITION].x;
+	avatar.serverPosition.y		= avatarData[Message.MESSAGE_POSITION].y;
 	//> 100px circle curently
 	if(
-		Math.pow(avatar.position.x - avatarData[Message.MESSAGE_POSITION].x,2) +
-		Math.pow(avatar.position.y - avatarData[Message.MESSAGE_POSITION].y,2)
+		Math.pow(avatar.position.x - avatar.serverPosition.x,2) +
+		Math.pow(avatar.position.y - avatar.serverPosition.y,2)
 		> ServerConfig.SQUARE_AUTHORITY
 	) {
 		avatar.position.x		= avatarData[Message.MESSAGE_POSITION].x;
 		avatar.position.y		= avatarData[Message.MESSAGE_POSITION].y;
 	}
-
-	avatar.serverPosition.x		= avatarData[Message.MESSAGE_POSITION].x;
-	avatar.serverPosition.y		= avatarData[Message.MESSAGE_POSITION].y;
 
 	avatar.acceleration.x	= avatarData[Message.MESSAGE_ACCELERATION].x;
 	avatar.acceleration.y	= avatarData[Message.MESSAGE_ACCELERATION].y;
@@ -266,6 +291,11 @@ var syncMonsterFromServer = function( monsterData ) {
 		monster.init();
 		Scene.addMonster(monster);
 	}
+
+	if(monster.removed) {
+		return false;
+	}
+
 	monster.velocity.x			= monsterData[Message.MESSAGE_VELOCITY].x;
 	monster.velocity.y			= monsterData[Message.MESSAGE_VELOCITY].y;
 	monster.serverPosition.x	= monsterData[Message.MESSAGE_POSITION].x;
@@ -282,6 +312,50 @@ var syncMonsterFromServer = function( monsterData ) {
 	return true;
 }
 
+var syncItemFromServer = function( itemData ) {
+	//make it if needed
+	var item = Scene.items[itemData[Message['ID']]];
+	if(item === undefined) {
+		item = new Item(
+			itemData[Message['ID']],
+			itemData[Message['NAME']],
+			new Vector(itemData[Message['MESSAGE_POSITION']].x,itemData[Message['MESSAGE_POSITION']].y),
+			itemData[Message['MESSAGE_SIZE']],
+			itemData[Message['MESSAGE_ORIENTATION']],
+			itemData[Message['MESSAGE_MASS']],
+			0,//maybe usefull later ?
+			0,//maybe usefull later ?
+			itemData[Message['MESSAGE_DELTASHOW']],
+			itemData[Message['MESSAGE_ELEMENT_ID']],
+			itemData[Message['MESSAGE_SKIN']],
+			itemData[Message['MESSAGE_COLOR']]
+		);
+		item.HP = itemData[Message['MESSAGE_CURRENT_HP']];
+		item.maxHP = itemData[Message['MESSAGE_HP']];
+		item.init();
+		Scene.addMonster(item);
+	}
+
+	if(item.removed) {
+		return false;
+	}
+
+	item.velocity.x			= itemData[Message.MESSAGE_VELOCITY].x;
+	item.velocity.y			= itemData[Message.MESSAGE_VELOCITY].y;
+	item.serverPosition.x	= itemData[Message.MESSAGE_POSITION].x;
+	item.serverPosition.y	= itemData[Message.MESSAGE_POSITION].y;
+	item.acceleration.x		= itemData[Message.MESSAGE_ACCELERATION].x;
+	item.acceleration.y		= itemData[Message.MESSAGE_ACCELERATION].y;
+	item.orientation		= itemData[Message.MESSAGE_ORIENTATION];
+
+	item.render();
+	return true;
+}
+
+var syncProjectileFromServer = function( projectileData ) {
+	debugger;
+	return true;
+}
 
 module.exports = Scene;
 

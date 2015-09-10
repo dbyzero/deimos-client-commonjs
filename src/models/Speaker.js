@@ -4,6 +4,7 @@ var inherit = require('../tools/inherit');
 Speaker = function (avatar, rw) {
 	this.id = 'speaker_' + avatar.id + '_' + Math.floor((Math.random()*1000000)+1);
 	this.readonly = !rw;
+	this.type = 'speaker';
 }
 
 inherit(Speaker,EventEmitter);
@@ -31,6 +32,15 @@ Speaker.prototype.init = function(avatar) {
 		this.emit('textChange', this.domElemTextArea.value)
 	}.bind(this));
 },
+
+Speaker.prototype.destroy = function() {
+	if(this.domElem) {
+		var nodeAvatar = this.domElem;
+		var parentNode = nodeAvatar.parentNode;
+		if(parentNode) parentNode.removeChild(nodeAvatar);
+		delete this.domElem;
+	}
+}
 
 Speaker.prototype.getText = function() {
 	return this.domElemTextArea.value ;

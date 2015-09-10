@@ -24,6 +24,8 @@ var Avatar = function( id, name, position, size, orientation, mass, moveSpeed, j
 	this.collisionTypeEnabled['projectiles'] = true;
 	this.collisionTypeEnabled['monsters'] = true;
 	this.collisionTypeEnabled['avatars'] = true;
+
+	this.type = 'avatar';
 };
 
 inherit(Avatar,Element);
@@ -71,7 +73,7 @@ Avatar.prototype.update = function(dt, now) {
 		var input = this.userInputs[id];
 		this.toMove.x += parseFloat(input.movement.x * dt/1000 * Math.min(1,input.durationIntegrated/100));//to make possible small mvt
 		this.toMove.y += parseFloat(input.movement.y * dt/1000);
-		input.durationIntegrated = input.durationIntegrated + dt;
+		input.durationIntegrated += dt;
 
 		//finish the interpolation
 		if(input.duration !== null) {
@@ -103,7 +105,14 @@ Avatar.prototype.update = function(dt, now) {
 		}
 	}
 
+
 	// this.postUpdate(dt, now);
 }
+
+Avatar.prototype.onElementCollision = function(collisionCoord, collisionElement) {
+	if(collisionElement.type === 'item') {
+		collisionElement.destroy();
+	}
+};
 
 module.exports = Avatar;

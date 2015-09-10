@@ -27,28 +27,52 @@ Engine.start = function(config) {
 	Socket = socketio.connect(config.serverURL+':'+config.serverPort);
 	Socket
 		.on('connect',function(){
+			console.log('connect');
 			onConnectionReady();
 		})
 		.on('connect_error',function(err){
+			console.log('connect_error');
 			onConnectionError(err);
 		})
 		.on(Message['ACTION_ERROR'],function(message){
+			console.log('ACTION_ERROR');
+			console.log(message);
 			showError(message);
 		})
 		.on(Message['ACTION_LOGGED_OK'],function(message){
+			console.log('ACTION_LOGGED_OK');
+			console.log(message);
 			onLogged(message);
 		})
 		.on(Message['ACTION_CHOOSE_CHAR_OK'],function(message){
+			console.log('ACTION_CHOOSE_CHAR_OK');
+			console.log(message);
 			onJoinGame(message);
 		})
 		.on(Message['ACTION_SYNC'],function(message){
+			console.log('ACTION_SYNC');
+			console.log(message);
 			Scene.parseData(message);
 		})
 		.on(Message['ACTION_SYNC_AVATAR'],function(message){
+			console.log('ACTION_SYNC_AVATAR');
+			console.log(message);
 			Scene.syncAvatarFromServer(message);
 		})
 		.on(Message['ACTION_SYNC_MONSTER'],function(message){
+			// console.log('ACTION_SYNC_MONSTER');
+			// console.log(message);
 			Scene.syncMonsterFromServer(message);
+		})
+		.on(Message['ACTION_SYNC_ITEM'],function(message){
+			console.log('ACTION_SYNC_ITEM');
+			console.log(message);
+			Scene.syncItemFromServer(message);
+		})
+		.on(Message['ACTION_SYNC_PROJECTILE'],function(message){
+			console.log('ACTION_SYNC_PROJECTILE');
+			console.log(message);
+			Scene.syncProjectileFromServer(message);
 		});
 }
 
@@ -203,6 +227,20 @@ var onLeftReleased = function() {
 	currentAvatar.removeUserInputs(Message['LEFT']);
 }
 
+var onRightPushed = function() {
+	var force = new UserMovement(
+		new Vector(currentAvatar.move_speed,0),
+		Message['RIGHT']
+	);
+	currentAvatar.addUserInputs(force);
+	sendMessage(Message['ACTION_MOVE_START'],force);
+	currentAvatar.oriented = 'right';
+}
+
+var onRightReleased = function() {
+	currentAvatar.removeUserInputs(Message['RIGHT']);
+}
+
 var onUpPushed = function() {
 	if(!currentAvatar.isLanded == false && currentAvatar.speaking == false) {
 		// var force = new UserMovement(
@@ -221,19 +259,6 @@ var onUpReleased = function() {
 	//stub
 }
 
-var onRightPushed = function() {
-	var force = new UserMovement(
-		new Vector(currentAvatar.move_speed,0),
-		Message['RIGHT']
-	);
-	currentAvatar.addUserInputs(force);
-	sendMessage(Message['ACTION_MOVE_START'],force);
-	currentAvatar.oriented = 'right';
-}
-
-var onRightReleased = function() {
-	currentAvatar.removeUserInputs(Message['RIGHT']);
-}
 
 var onDownPushed = function() {
 	currentAvatar.goingDown = true;
@@ -271,9 +296,9 @@ var onSpacePushed = function() {
 
 var updateTick = function() {
 	var deltaTimeMs = new Date().getTime() - lastTimestampUpdate;
+	lastTimestampUpdate = new Date().getTime();
 	FPS = 1000/deltaTimeMs;
 	Scene.update(deltaTimeMs);
-	lastTimestampUpdate = new Date().getTime();
 }
 
 var onConnectionReady = function(){

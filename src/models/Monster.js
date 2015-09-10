@@ -17,6 +17,8 @@ var Monster = function( id, name, position, size, orientation, mass, moveSpeed, 
 
 	this.collisionTypeEnabled['bonus'] = false;
 	this.collisionTypeEnabled['monsters'] = false;
+
+	this.type = 'monster';
 };
 
 inherit(Monster,Element);
