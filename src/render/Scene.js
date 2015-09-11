@@ -4,6 +4,7 @@ var Message = require('../Message')[ServerConfig.messageLevel];
 var Avatar = require('../models/Avatar');
 var Monster = require('../models/Monster');
 var Item = require('../models/Item');
+var AttackZone = require('../models/AttackZone');
 
 var Scene = {};
 Scene.items			= {};
@@ -47,6 +48,27 @@ Scene.syncItemFromServer = function(dataItem) {
 
 Scene.syncProjectileFromServer = function(dataItem) {
 	syncProjectileFromServer(dataItem);
+}
+
+Scene.addAttackZoneFromServer = function(dataAttackZone) {
+	var attackZone = new AttackZone(
+		dataAttackZone[Message['MESSAGE_ELEMENT_ID']],
+		dataAttackZone[Message['MESSAGE_POSITION']],
+		dataAttackZone[Message['MESSAGE_SIZE']],
+		dataAttackZone[Message['MESSAGE_OWNER']],
+		dataAttackZone[Message['MESSAGE_DURATION']]
+	);
+	attackZone.render();
+	domElemScene.appendChild(attackZone.domElem);
+	Scene.attackZones[attackZone.id] = attackZone;
+	setTimeout(
+		function(){
+			attackZone.cleanDom();
+			delete attackZone;
+			delete Scene.attackZones[attackZone.id]
+		},
+		attackZone.duration
+	);
 }
 
 Scene.parseData = function(data) {
@@ -125,13 +147,13 @@ Scene.update = function(dt) {
 	for(i=0;i<keys.length;i++) {
 		Scene.monsters[keys[i]].update(dt,now);
 	}
-	keys = Object.keys(Scene.attackZones);
-	for(i=0;i<keys.length;i++) {
-		if(Scene.attackZones[keys[i]].update(dt,now) == false){
-			Scene.attackZones[keys[i]].destroy();
-			delete Scene.attackZones[keys[i]];
-		};
-	}
+	// keys = Object.keys(Scene.attackZones);
+	// for(i=0;i<keys.length;i++) {
+	// 	if(Scene.attackZones[keys[i]].update(dt,now) == false){
+	// 		Scene.attackZones[keys[i]].destroy();
+	// 		delete Scene.attackZones[keys[i]];
+	// 	};
+	// }
 
 	//move and render avatars !
 	keys = Object.keys(Scene.avatars);

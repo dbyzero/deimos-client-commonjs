@@ -73,6 +73,11 @@ Engine.start = function(config) {
 			console.log('ACTION_SYNC_PROJECTILE');
 			console.log(message);
 			Scene.syncProjectileFromServer(message);
+		})
+		.on(Message['ACTION_SYNC_ATTACK_ZONE'],function(message){
+			console.log('ACTION_SYNC_PROJECTILE');
+			console.log(message);
+			Scene.addAttackZoneFromServer(message);
 		});
 }
 
@@ -243,12 +248,6 @@ var onRightReleased = function() {
 
 var onUpPushed = function() {
 	if(!currentAvatar.isLanded == false && currentAvatar.speaking == false) {
-		// var force = new UserMovement(
-		// 	new Vector(0,parseInt('-'+currentAvatar.jump_speed)),
-		// 	Message['JUMP']
-		// );
-		// currentAvatar.addForceNextStep(force.movement) ;
-
 		currentAvatar.velocity.y -= parseFloat(-currentAvatar.jump_speed);
 		sendMessage(Message['ACTION_JUMP'],{});
 
@@ -291,7 +290,12 @@ var onEnterPushed = function() {
 }
 
 var onSpacePushed = function() {
-	console.log('shoot');
+	var data = {};
+	data[Message['MESSAGE_POSITION']] = {
+		'x' : currentAvatar.position.x,
+		'y' : currentAvatar.position.y
+	}
+	sendMessage(Message['ACTION_ATTACK'], data);
 }
 
 var updateTick = function() {

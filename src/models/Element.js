@@ -102,6 +102,7 @@ Element.prototype.init = function() {
 	if(!!this.name) {
 		this.initName();
 	}
+	this.initVisualCollisonZone();
 }
 
 Element.prototype.toggleSpeaking = function () {
@@ -139,7 +140,6 @@ Element.prototype.initAnimation = function() {
 };
 
 Element.prototype.initHP = function() {
-	//REFAIRE EN INTEGRANT DANS LE DIV ELEMENT LES HP
 	var domElemHP = document.createElement("div");
 	domElemHP.setAttribute("id",this.domId+'_hp') ;
 
@@ -157,6 +157,21 @@ Element.prototype.initHP = function() {
 	this.domElem.appendChild(domElemHP) ;
 
 	this.domElemHP = domElemHP;
+};
+
+Element.prototype.initVisualCollisonZone = function() {
+	var domElemCollideZone = document.createElement("div");
+	domElemCollideZone.style.position = "absolute";
+	domElemCollideZone.style.display  = 'block' ;
+	domElemCollideZone.style.zIndex = 12;
+	domElemCollideZone.style.width = this.size.x + 'px';
+	domElemCollideZone.style.height = this.size.y + 'px';
+	domElemCollideZone.style.marginTop = this.deltashow.y+'px';
+	domElemCollideZone.style.marginLeft = this.deltashow.x+'px';
+	domElemCollideZone.style.backgroundColor = '#ffffff';
+	domElemCollideZone.style.opacity = '0.5';
+
+	this.domElem.appendChild(domElemCollideZone) ;
 };
 
 Element.prototype.initName = function() {
