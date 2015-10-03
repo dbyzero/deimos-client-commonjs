@@ -187,7 +187,7 @@ Scene.addAvatar = function(avatar) {
 		throw new Error('Invalid avatar');
 	}
 	Scene.avatars[avatar.id] = avatar;
-	domElemScene.appendChild(avatar.domElem)
+	avatar.appendInto(domElemScene);
 }
 
 Scene.addMonster = function(monster) {
@@ -195,7 +195,7 @@ Scene.addMonster = function(monster) {
 		throw new Error('Invalid monster');
 	}
 	Scene.monsters[monster.id] = monster;
-	domElemScene.appendChild(monster.domElem)
+	monster.appendInto(domElemScene);
 }
 
 var renderCollistionArea = function(blocks) {
@@ -268,7 +268,13 @@ var syncAvatarFromServer = function(avatarData) {
 
 	avatar.acceleration.x	= avatarData[Message.MESSAGE_ACCELERATION].x;
 	avatar.acceleration.y	= avatarData[Message.MESSAGE_ACCELERATION].y;
-	avatar.isLanded			= avatarData[Message.MESSAGE_LANDED];
+
+	//if server say that we land, we sync status + Y position
+	if(avatar.isLanded != avatarData[Message.MESSAGE_LANDED]) {
+		avatar.isLanded			= avatarData[Message.MESSAGE_LANDED];
+		avatar.position.y = avatarData[Message.MESSAGE_POSITION].y;
+	}
+
 	avatar.HP				= avatarData[Message.MESSAGE_CURRENT_HP];
 	avatar.maxHP			= avatarData[Message.MESSAGE_HP];
 	avatar.userActions		= avatarData[Message.MESSAGE_USER_INPUT];

@@ -78,7 +78,8 @@ var Element = function( id, name, position, size, orientation, mass, moveSpeed, 
 	dom_elem.style.transform = translation;
 	dom_elem.style.webkitTransform = translation;
 
-	dom_elem.style.backgroundColor = 'red';
+	dom_elem.style.backgroundColor = 'green';
+	dom_elem.style.zIndex = 10;
 
 	this.domElem = dom_elem;
 	this.domElemWidth = this.domElem.offsetWidth;//usefull for positionning name and speaker
@@ -86,6 +87,27 @@ var Element = function( id, name, position, size, orientation, mass, moveSpeed, 
 
 	this.type = 'element';
 	this.removed = false;
+
+	//create server dom elem for debug
+	if(ServerConfig.showRemote) {
+		var dom_elem_server = document.createElement("div");
+		dom_elem_server.setAttribute("id",this.domId+'_server');
+
+		dom_elem_server.style.width = parseInt(this.size.x + this.deltashow.x*2)+'px';
+		dom_elem_server.style.height  = parseInt(this.size.y + this.deltashow.y)+'px';
+
+		dom_elem_server.style.display  = 'block';
+		dom_elem_server.style.position  = 'absolute';
+
+		var translation = "translate3d("+(this.serverPosition.x - this.deltashow.x)+"px,"+(this.serverPosition.y - this.deltashow.y)+"px,0px)";
+		dom_elem_server.style.transform = translation;
+		dom_elem_server.style.webkitTransform = translation;
+
+		dom_elem_server.style.backgroundColor = 'red';
+		dom_elem_server.innerHTML = this.name;
+		dom_elem.style.zIndex = 9;
+		this.domElemServer = dom_elem_server;
+	}
 
 	this.init();
 };
@@ -350,6 +372,13 @@ Element.prototype.move = function() {
 
 };
 
+Element.prototype.appendInto = function(domElem) {
+	domElem.appendChild(this.domElem);
+	if(ServerConfig.showRemote) {
+		domElem.appendChild(this.domElemServer);
+	}
+};
+
 Element.prototype.render = function() {
 	if(this.position !== undefined && this.removed === false) {
 		var X = parseInt(this.position.x - parseInt(this.deltashow.x));
@@ -358,9 +387,21 @@ Element.prototype.render = function() {
 		this.domElem.style.transform = translation;
 		this.domElem.style.webkitTransform = translation;
 
+		if(ServerConfig.showRemote) {
+			this.renderServerPosition();
+		}
+
 		return true;
 	}
 	return false;
+};
+
+Element.prototype.renderServerPosition = function() {
+	if(this.serverPosition !== undefined && this.removed === false) {
+		var translation = "translate3d("+(this.serverPosition.x-this.deltashow.x)+"px,"+(this.serverPosition.y-this.deltashow.y)+"px,0px)";
+		this.domElemServer.style.transform = translation;
+		this.domElemServer.style.webkitTransform = translation;
+	}
 };
 
 Element.prototype.checkBlocksCollision = function( currentMovement ) {

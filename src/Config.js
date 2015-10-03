@@ -4,6 +4,7 @@ var Config = {};
 
 Config.FPS = 60;
 Config.mode = "debug",
+Config.showRemote = true,
 Config.messageLevel = "verbose",
 Config.FPS = 60;
 Config.GAME_SPEED = 33;
